@@ -15,11 +15,17 @@ class Item extends Model
         'price',
         'payment',
         'delivery',
-        'image'
+        'image',
+        'user_id'
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function offers()
+    {
+        return $this->hasMany(Offer::class);
     }
 }

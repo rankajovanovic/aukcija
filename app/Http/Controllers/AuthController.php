@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 
 use App\Http\Requests\RegisterRequest;
-use Hash;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,15 +16,23 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login()
+    public function login(Request $request)
     {
-        $credentials = request(['email', 'password']);
-
-        if (! $token = auth()->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        return $this->respondWithToken($token);
+        $credentials = [
+            'email' => $request->email,
+            'password' => $request->password,
+          ];
+      
+          $token = auth('api')->attempt($credentials);
+      
+          if (!$token) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+          }
+      
+          return [
+            'token' => $token,
+            'user' => auth('api')->user()
+          ];
     }
 
     public function register(RegisterRequest $request)
@@ -31,7 +40,8 @@ class AuthController extends Controller
         $data = $request->validated();
         $data['password'] = Hash::make($data['password']);
         $user = User::create($data);
-        $token = Auth::login($user);
+        $token = auth('api')->login($user);
+        
         return [
         'token' => $token,
         'user' => $user
@@ -65,24 +75,18 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function refresh()
+  
+    public function refreshToken()
     {
-        return $this->respondWithToken(auth()->refresh());
+        $token = Auth::refresh();
+        return [
+            'token' => $token
+        ];
+    }
+    public function authUser()
+    {
+        $user = auth('api')->user();
+        return $user;
     }
 
-    /**
-     * Get the token array structure.
-     *
-     * @param  string $token
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    protected function respondWithToken($token)
-    {
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
-        ]);
-    }
 }
