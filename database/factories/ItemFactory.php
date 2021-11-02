@@ -18,8 +18,8 @@ class ItemFactory extends Factory
             'name' => $this->faker->word(),
             'description'=> $this->faker->text($maxNbChars = 200),
             'price'=> $this->faker->numberBetween($min = 1000, $max = 90000),
-            'payment'=> $this->faker->randomElement($array = array ('card','cash')) ,
-            'delivery'=> $this->faker->randomElement($array = array ('regular','fast')),
+            'payment'=> $this->faker->randomElement($array = array ('Card','Cash')) ,
+            'delivery'=> $this->faker->randomElement($array = array ('Regular','Fast')),
             'image'=> $this->faker->image('public/storage/images',640,480, null, false)
         ];
     }
