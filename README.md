@@ -1,9 +1,9 @@
 # aukcija
  
-Run composer install
-Run php artisan key:generate
-Copy .env.example file to .env
-Change DB_DATABASE in .env
-Run php artisan migrate
-Run php artisan db:seed to run seeders
-php artisan serve
+Run composer install <br>
+Run php artisan key:generate <br>
+Copy .env.example file to .env <br>
+Change DB_DATABASE in .env <br>
+Run php artisan migrate <br>
+Run php artisan db:seed to run seeders <br>
+php artisan serve <br>
