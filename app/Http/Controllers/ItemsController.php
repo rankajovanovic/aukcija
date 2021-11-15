@@ -4,10 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ItemRequest;
 use App\Models\Item;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class ItemsController extends Controller
 {
@@ -19,7 +18,7 @@ class ItemsController extends Controller
     public function index(Request $request)
     {
         $itemQuery = Item::query();
-        $itemQuery->with('user');
+        $itemQuery->with('user', 'offers');
 
         $search = $request->header('searchText');
         $itemQuery->where( function($query) use ($search) {
@@ -31,24 +30,14 @@ class ItemsController extends Controller
                 });
         });
 
-        $items = $itemQuery->get();
-
-        return $items;
-
-
+        $itemQuery->where('active', 1);
+        $items = $itemQuery->orderByDesc('created_at')->take($request->header('pagination'))->get();
+        $count = $itemQuery->count();
+    
+        return [$items, $count];
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
+       /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -57,6 +46,7 @@ class ItemsController extends Controller
     public function store(ItemRequest $request)
     {
         $data = $request->validated();
+        $data['end_time'] = Carbon::now()->addDays(10);
         $item = Item::create($data);
 
         return response()->json($item);
@@ -70,7 +60,8 @@ class ItemsController extends Controller
      */
     public function show($id)
     {
-        $item = Item::with('user')->findOrFail($id);
+        $item = Item::with('user', 'offers')->findOrFail($id);
+        
         return response()->json($item);
     }
 
@@ -86,5 +77,21 @@ class ItemsController extends Controller
         $item->delete();
 
         return response()->json($item);    
+    }
+
+    public function getUserBuyItems() 
+    {
+        $items = Item::where('buyer_id', '=', Auth::user()->id)->get();
+
+        return response()->json($items);
+    }
+
+    public function getUserSoldItems() 
+    {
+        $items = Item::where('user_id', '=', Auth::user()->id)
+                        ->where('active', '=',  '0')
+                        ->get();
+
+        return response()->json($items);
     }
 }
