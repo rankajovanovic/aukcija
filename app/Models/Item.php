@@ -16,12 +16,21 @@ class Item extends Model
         'payment',
         'delivery',
         'image',
-        'user_id'
+        'user_id',
+        'end_time',
+        'buyer_id',
+        'buy_price',
+        'active',
     ];
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function buyer() 
+    {
+        return $this->hasOne(User::class, 'buyer_id');
     }
 
     public function offers()
