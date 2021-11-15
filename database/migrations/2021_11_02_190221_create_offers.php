@@ -17,7 +17,7 @@ class CreateOffers extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained();
             $table->foreignId('item_id')->constrained();
-            $table->integer('offer');
+            $table->integer('price');
             $table->timestamps();
         });
     }

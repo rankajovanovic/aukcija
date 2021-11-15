@@ -22,6 +22,10 @@ class CreateItemsTable extends Migration
             $table->string('payment');
             $table->string('delivery');
             $table->string('image')->nullable();
+            $table->dateTime('end_time');
+            $table->foreignId('buyer_id')->nullable()->constrained();
+            $table->integer('buy_price')->nullable();
+            $table->boolean('active')->default(true);
             $table->timestamps();
         });
     }
