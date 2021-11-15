@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Item;
 use App\Models\Offer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class OffersController extends Controller
 {
@@ -12,22 +14,15 @@ class OffersController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function getUserOffers()
     {
-        //
+        $user = Auth::user();
+        $offers = $user->offers()->with('item')->get();
+
+        return response()->json($offers);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
+     /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -35,41 +30,29 @@ class OffersController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        
+        $data = $request->validate([
+            'user_id' => 'required',
+            'item_id' => 'required',
+            'price' => 'required'
+        ]);
+            
+        $item = Item::findOrFail($data['item_id']);
+        $minPrice = $item['price'];
+        if( $minPrice >= $data['price'] ) {
+            return response()->json([
+                'error' => 'Your bid must be greater than the bid'
+            ]);        
+        }
+        $check = Offer::where('user_id', '=', $data['user_id'])->where('item_id', '=', $data['item_id'])->get();
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Offer  $offer
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Offer $offer)
-    {
-        //
-    }
+        if($check) {
+           return response()->json(['error' => 'The offer already exists for this item']); 
+        }
+        
+        $offer = Offer::create($data);
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Offer  $offer
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Offer $offer)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Offer  $offer
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Offer $offer)
-    {
-        //
+        return response()->json($offer);
     }
 
     /**
@@ -78,8 +61,11 @@ class OffersController extends Controller
      * @param  \App\Models\Offer  $offer
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Offer $offer)
+    public function destroy($id)
     {
-        //
+        $offer = Offer::findOrFail($id);
+        $offer->delete();
+
+        return response()->json($offer);  
     }
 }
